@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+  AGENT
+}
+
+enum BusinessType {
+  B2B
+  B2C
+}
+
+enum PaymentType {
+  PREPAID
+  COD
+}
+
+enum ZoneType {
+  INTRA
+  INTER
+}
+
+enum OrderStatus {
+  CREATED
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+
+  role Role @default(CUSTOMER)
+
+  isAvailable Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders         Order[] @relation("CustomerOrders")
+  assignedOrders Order[] @relation("AgentOrders")
+
+  location AgentLocation?
+}
+
+model AgentLocation {
+  id String @id @default(uuid())
+
+  agentId String @unique
+  agent   User   @relation(fields: [agentId], references: [id])
+
+  latitude  Float
+  longitude Float
+
+  updatedAt DateTime @updatedAt
+}
+
+model Zone {
+  id   String @id @default(uuid())
+  name String @unique
+
+  areas Area[]
+
+  pickupOrders Order[] @relation("PickupZone")
+  dropOrders   Order[] @relation("DropZone")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Area {
+  id   String @id @default(uuid())
+  name String
+
+  zoneId String
+  zone   Zone   @relation(fields: [zoneId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([name, zoneId])
+}
+
+model RateCard {
+  id String @id @default(uuid())
+
+  businessType BusinessType
+  zoneType     ZoneType
+
+  ratePerKg    Float
+  codSurcharge Float
+
+  createdAt DateTime @default(now())
+
+  @@unique([businessType, zoneType])
+}
+
+model Order {
+  id String @id @default(uuid())
+
+  trackingNumber String @unique
+
+  customerId String
+  customer   User   @relation("CustomerOrders", fields: [customerId], references: [id])
+
+  assignedAgentId String?
+  assignedAgent   User?   @relation("AgentOrders", fields: [assignedAgentId], references: [id])
+
+  pickupAddress String
+  dropAddress   String
+
+  pickupZoneId String
+  pickupZone   Zone   @relation("PickupZone", fields: [pickupZoneId], references: [id])
+
+  dropZoneId String
+  dropZone   Zone   @relation("DropZone", fields: [dropZoneId], references: [id])
+
+  length Float
+  width  Float
+  height Float
+
+  actualWeight     Float
+  volumetricWeight Float
+  chargeableWeight Float
+
+  businessType BusinessType
+  paymentType  PaymentType
+
+  finalCharge Float
+
+  status OrderStatus @default(CREATED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trackingHistory  TrackingHistory[]
+  deliveryAttempts DeliveryAttempt[]
+  notifications    NotificationLog[]
+}
+
+model TrackingHistory {
+  id String @id @default(uuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  status OrderStatus
+
+  actorId   String
+  actorRole Role
+
+  createdAt DateTime @default(now())
+}
+
+model DeliveryAttempt {
+  id String @id @default(uuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  attemptNumber Int
+
+  scheduledDate DateTime
+
+  status OrderStatus
+
+  createdAt DateTime @default(now())
+}
+
+model NotificationLog {
+  id String @id @default(uuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  channel String
+  message String
+
+  sentAt DateTime @default(now())
+}

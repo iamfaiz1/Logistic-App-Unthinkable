@@ -51,3 +51,5 @@ pids
 # OS generated files
 .DS_Store
 Thumbs.db
+/generated/prisma
+.db

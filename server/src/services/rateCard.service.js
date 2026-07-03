@@ -34,3 +34,20 @@ export const getRateCards =
       },
     });
 };
+
+export const updateRateCard =
+  async (id, data) => {
+
+    return prisma.rateCard.update({
+      where: { id },
+      data,
+    });
+};
+
+export const deleteRateCard =
+  async (id) => {
+
+    return prisma.rateCard.delete({
+      where: { id },
+    });
+};

@@ -20,6 +20,11 @@ import {
   createOrderSchema,
 } from "../validators/order.validator.js";
 
+import {
+  getOrdersController,
+  getOrderController,
+} from "../controllers/orderQuery.controller.js";
+
 const router =
   express.Router();
 
@@ -32,6 +37,18 @@ router.post(
   ),
   validate(createOrderSchema),
   createOrderController
+);
+
+router.get(
+  "/",
+  authenticateUser,
+  getOrdersController
+);
+
+router.get(
+  "/:id",
+  authenticateUser,
+  getOrderController
 );
 
 export default router;

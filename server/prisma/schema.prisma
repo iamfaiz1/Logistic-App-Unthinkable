@@ -172,11 +172,13 @@ model DeliveryAttempt {
   id String @id @default(uuid())
 
   orderId String
-  order   Order  @relation(fields: [orderId], references: [id])
+  order Order @relation(fields: [orderId], references: [id])
 
   attemptNumber Int
 
   scheduledDate DateTime
+
+  reason String?
 
   status OrderStatus
 

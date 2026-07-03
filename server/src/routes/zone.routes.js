@@ -1,5 +1,4 @@
 import express from "express";
-
 import {
   createZoneController,
   getZonesController,
@@ -20,7 +19,23 @@ import {
   createZoneSchema,
 } from "../validators/zone.validator.js";
 
+
 const router = express.Router();
+
+
+router.patch(
+  "/:id",
+  authenticateUser,
+  authorizeRoles("ADMIN"),
+  updateZoneController
+);
+
+router.delete(
+  "/:id",
+  authenticateUser,
+  authorizeRoles("ADMIN"),
+  deleteZoneController
+);
 
 router.post(
   "/",

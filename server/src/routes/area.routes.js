@@ -39,4 +39,18 @@ router.get(
   getAreasController
 );
 
+router.patch(
+  "/:id",
+  authenticateUser,
+  authorizeRoles("ADMIN"),
+  updateAreaController
+);
+
+router.delete(
+  "/:id",
+  authenticateUser,
+  authorizeRoles("ADMIN"),
+  deleteAreaController
+);
+
 export default router;

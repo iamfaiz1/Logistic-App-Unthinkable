@@ -20,8 +20,7 @@ import {
   createRateCardSchema,
 } from "../validators/rateCard.validator.js";
 
-const router =
-  express.Router();
+const router = express.Router();
 
 router.post(
   "/",
@@ -37,6 +36,20 @@ router.get(
   "/",
   authenticateUser,
   getRateCardsController
+);
+
+router.patch(
+  "/:id",
+  authenticateUser,
+  authorizeRoles("ADMIN"),
+  updateRateCardController
+);
+
+router.delete(
+  "/:id",
+  authenticateUser,
+  authorizeRoles("ADMIN"),
+  deleteRateCardController
 );
 
 export default router;

@@ -28,3 +28,24 @@ export const getAllZones = async () => {
     },
   });
 };
+
+
+export const updateZone = async (
+  id,
+  data
+) => {
+
+  return prisma.zone.update({
+    where: { id },
+    data,
+  });
+};
+
+export const deleteZone = async (
+  id
+) => {
+
+  return prisma.zone.delete({
+    where: { id },
+  });
+};

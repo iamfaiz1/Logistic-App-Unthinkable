@@ -6,6 +6,7 @@ export const createTrackingEntry = async ({
   actorId,
   actorRole,
 }) => {
+
   return prisma.trackingHistory.create({
     data: {
       orderId,
@@ -16,7 +17,6 @@ export const createTrackingEntry = async ({
   });
 };
 
-
 export const updateOrderStatus =
   async ({
     orderId,
@@ -25,21 +25,51 @@ export const updateOrderStatus =
     actorRole,
   }) => {
 
-    await prisma.order.update({
-      where: {
-        id: orderId,
-      },
-      data: {
-        status,
-      },
+    const order =
+      await prisma.order.update({
+        where: {
+          id: orderId,
+        },
+        data: {
+          status,
+        },
+      });
+
+    await createTrackingEntry({
+      orderId,
+      status,
+      actorId,
+      actorRole,
     });
 
-    return prisma.trackingHistory.create({
-      data: {
+    if (
+      status === "DELIVERED" ||
+      status === "FAILED"
+    ) {
+      if (order.assignedAgentId) {
+        await prisma.user.update({
+          where: {
+            id: order.assignedAgentId,
+          },
+          data: {
+            isAvailable: true,
+          },
+        });
+      }
+    }
+
+    return order;
+  };
+
+export const getTrackingTimeline =
+  async (orderId) => {
+
+    return prisma.trackingHistory.findMany({
+      where: {
         orderId,
-        status,
-        actorId,
-        actorRole,
+      },
+      orderBy: {
+        createdAt: "asc",
       },
     });
 };

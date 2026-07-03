@@ -3,6 +3,8 @@ import express from "express";
 import {
   createRateCardController,
   getRateCardsController,
+  updateRateCardController,
+  deleteRateCardController,
 } from "../controllers/rateCard.controller.js";
 
 import {

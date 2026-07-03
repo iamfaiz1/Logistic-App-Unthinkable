@@ -2,7 +2,9 @@ import express from "express";
 import {
   createZoneController,
   getZonesController,
-} from "../controllers/zone.controllers.js";
+  updateZoneController,
+  deleteZoneController,
+} from "../controllers/zone.controller.js";
 
 import { validate }
 from "../middleware/validate.middleware.js";

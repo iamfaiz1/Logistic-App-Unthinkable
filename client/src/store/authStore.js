@@ -27,6 +27,17 @@ export const useAuthStore = create((set, get) => ({
       throw error
     }
   },
+  register: async (payload) => {
+    set({ isLoading: true, error: '' })
+    try {
+      const response = await authService.register(payload)
+      set({ isLoading: false })
+      return unwrapUser(response)
+    } catch (error) {
+      set({ error: error.message, isLoading: false })
+      throw error
+    }
+  },
   restoreSession: async () => {
     if (!get().token) return
     try {

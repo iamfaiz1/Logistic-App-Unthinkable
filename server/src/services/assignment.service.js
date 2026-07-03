@@ -59,7 +59,7 @@ export const assignAgentToOrder =
         await createTrackingEntry({
             orderId: order.id,
             status: "CREATED",
-            actorId: selectedAgent.id,
+            actorId: assignedAgent.id,
             actorRole: "AGENT",
         });
 

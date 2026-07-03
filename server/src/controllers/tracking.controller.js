@@ -28,9 +28,7 @@ export const updateStatusController =
 
 export const getTrackingController =
   async (req, res, next) => {
-
     try {
-
       const timeline =
         await getTrackingTimeline(
           req.params.id

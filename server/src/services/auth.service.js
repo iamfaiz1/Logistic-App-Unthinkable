@@ -2,6 +2,11 @@ import argon2 from "argon2";
 import prisma from "../config/prisma.js";
 import { generateToken } from "../utils/jwt.js";
 
+const toSafeUser = ({
+    password,
+    ...user
+}) => user;
+
 export const registerUser = async ({
     name,
     email,
@@ -25,7 +30,7 @@ export const registerUser = async ({
     });
 
     const token = generateToken(user);
-    return { user, token };
+    return { user: toSafeUser(user), token };
 };
 
 export const loginUser = async ({
@@ -50,5 +55,5 @@ export const loginUser = async ({
     }
 
     const token = generateToken(user);
-    return { user, token };
+    return { user: toSafeUser(user), token };
 };

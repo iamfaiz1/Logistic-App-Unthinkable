@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import AdminLayout from '../layouts/AdminLayout'
 import AgentLayout from '../layouts/AgentLayout'
 import AuthLayout from '../layouts/AuthLayout'
@@ -16,6 +16,8 @@ import AgentDashboardPage from '../pages/agent/AgentDashboardPage'
 import AssignedOrdersPage from '../pages/agent/AssignedOrdersPage'
 import LocationUpdatePage from '../pages/agent/LocationUpdatePage'
 import LoginPage from '../pages/auth/LoginPage'
+import RegisterPage from '../pages/auth/RegisterPage'
+import LandingPage from '../pages/shared/LandingPage'
 import CreateOrderPage from '../pages/customer/CreateOrderPage'
 import CustomerDashboardPage from '../pages/customer/CustomerDashboardPage'
 import CustomerOrdersPage from '../pages/customer/CustomerOrdersPage'
@@ -40,9 +42,10 @@ export default function AppRoutes() {
     <BrowserRouter>
       <Toaster position="top-right" />
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<LandingPage />} />
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
         </Route>
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
         <Route element={<ProtectedRoute />}>

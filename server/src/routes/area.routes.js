@@ -2,6 +2,8 @@ import express from "express";
 import {
   createAreaController,
   getAreasController,
+  updateAreaController,
+  deleteAreaController,
 } from "../controllers/area.controller.js";
 
 import {

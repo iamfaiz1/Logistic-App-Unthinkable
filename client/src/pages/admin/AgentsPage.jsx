@@ -9,8 +9,8 @@ const columns = [
   { accessorKey: 'name', header: 'Agent' },
   { accessorKey: 'email', header: 'Email' },
   { accessorKey: 'isAvailable', header: 'Availability', cell: ({ getValue }) => <Badge tone={getValue() ? 'success' : 'neutral'}>{getValue() ? 'Available' : 'Busy'}</Badge> },
-  { accessorKey: 'currentLat', header: 'Latitude' },
-  { accessorKey: 'currentLng', header: 'Longitude' },
+  { accessorKey: 'location.latitude', header: 'Latitude', cell: ({ row }) => row.original.location?.latitude ?? '-' },
+  { accessorKey: 'location.longitude', header: 'Longitude', cell: ({ row }) => row.original.location?.longitude ?? '-' },
 ]
 
 export default function AgentsPage() {

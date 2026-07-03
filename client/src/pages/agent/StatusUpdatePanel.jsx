@@ -22,12 +22,12 @@ export default function StatusUpdatePanel() {
 
   return (
     <Card>
-      <h2 className="mb-4 text-base font-bold text-slate-950 dark:text-white">Update delivery status</h2>
+      <h2 className="mb-4 text-base font-bold text-slate-950">Update delivery status</h2>
       <form className="grid gap-4 md:grid-cols-[1fr_1fr_auto]" onSubmit={handleSubmit(onSubmit)}>
         <FormInput label="Order ID" registration={register('orderId')} error={errors.orderId} />
         <FormSelect label="Status" registration={register('status')} error={errors.status}>
           <option value="">Select status</option>
-          {schema.shape.status.options.map((status) => <option value={status} key={status}>{status}</option>)}
+          {schema.shape.status.options.map((status) => <option value={status} key={status}>{status.replaceAll('_', ' ')}</option>)}
         </FormSelect>
         <Button className="self-end" type="submit" isLoading={isSubmitting}>Update</Button>
       </form>

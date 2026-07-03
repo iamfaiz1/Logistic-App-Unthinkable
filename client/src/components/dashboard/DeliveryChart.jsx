@@ -2,12 +2,12 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import Card from '../common/Card'
 import EmptyState from '../common/EmptyState'
 
-const colors = ['#0f766e', '#2563eb', '#d97706', '#dc2626']
+const colors = ['#2563eb', '#38bdf8', '#f59e0b', '#ef4444', '#64748b']
 
 export default function DeliveryChart({ data = [] }) {
   return (
     <Card>
-      <h2 className="text-base font-bold text-slate-950 dark:text-white">Delivery status</h2>
+      <h2 className="text-base font-bold text-slate-950">Delivery status</h2>
       <div className="mt-4 h-64">
         {data.length ? (
           <ResponsiveContainer>

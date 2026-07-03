@@ -2,9 +2,9 @@ import { Loader2 } from 'lucide-react'
 import { cn } from '../../utils/cn'
 
 const variants = {
-  primary: 'bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:text-slate-950',
-  secondary: 'bg-white text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-700',
-  ghost: 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800',
+  primary: 'bg-blue-600 text-white shadow-sm shadow-blue-600/20 hover:bg-blue-700',
+  secondary: 'bg-white text-slate-800 ring-1 ring-blue-100 hover:bg-blue-50',
+  ghost: 'text-slate-600 hover:bg-blue-50 hover:text-blue-700',
   danger: 'bg-rose-600 text-white hover:bg-rose-700',
 }
 

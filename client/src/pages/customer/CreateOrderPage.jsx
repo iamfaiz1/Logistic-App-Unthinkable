@@ -66,7 +66,11 @@ export default function CreateOrderPage() {
               <option value="">Select</option><option value="PREPAID">PREPAID</option><option value="COD">COD</option>
             </FormSelect>
           </div>
-          {pricing && <div className="rounded-xl bg-teal-50 p-4 text-sm font-semibold text-teal-900 dark:bg-teal-950 dark:text-teal-100">Final price: {pricing.finalPrice ?? pricing.data?.finalPrice ?? 'Calculated'}</div>}
+          {pricing && (
+            <div className="rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm font-semibold text-blue-900">
+              Final charge: {pricing.finalCharge ?? pricing.data?.finalCharge ?? 'Calculated'}
+            </div>
+          )}
           <div className="flex flex-wrap justify-end gap-2">
             <Button type="button" variant="secondary" onClick={priceOrder}>Calculate price</Button>
             <Button type="submit" isLoading={isSubmitting}>Create order</Button>

@@ -17,9 +17,6 @@ const schema = z.object({
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  
-  // Note: I renamed the store's register function to 'registerUser' 
-  // so it does not mix up with the 'register' function from react-hook-form.
   const { isAuthenticated, dashboardPath, register: registerUser, isLoading, error } = useAuthStore()
   
   const { register, handleSubmit, formState: { errors } } = useForm({
@@ -27,7 +24,6 @@ export default function RegisterPage() {
     defaultValues: { name: '', email: '', password: '' },
   })
 
-  // Send the user away if they are already logged in
   if (isAuthenticated) return <Navigate to={dashboardPath()} replace />
 
   const onSubmit = async (values) => {
@@ -42,25 +38,22 @@ export default function RegisterPage() {
 
   return (
     <div>
-      {/* Header Section */}
       <div className="mb-8 flex items-center gap-3">
-        <span className="grid h-11 w-11 place-items-center rounded-xl bg-teal-700 text-white">
+        <span className="grid h-11 w-11 place-items-center rounded-lg bg-blue-600 text-white">
           <Truck className="h-5 w-5" />
         </span>
         <div>
-          <h1 className="text-xl font-black text-slate-950 dark:text-white">Unstopable Logistics</h1>
+          <h1 className="text-xl font-black text-slate-950">Unstopable Logistics</h1>
           <p className="text-sm text-slate-500">Create your command center account</p>
         </div>
       </div>
 
-      {/* Error Message */}
       {error && (
         <div className="mb-4">
           <ErrorState message={error} />
         </div>
       )}
 
-      {/* Form Section */}
       <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)}>
         <FormInput 
           label="Name" 

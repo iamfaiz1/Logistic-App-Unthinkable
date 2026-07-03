@@ -39,9 +39,9 @@ export default function LoginPage() {
   return (
     <div>
       <div className="mb-8 flex items-center gap-3">
-        <span className="grid h-11 w-11 place-items-center rounded-xl bg-teal-700 text-white"><Truck className="h-5 w-5" /></span>
+        <span className="grid h-11 w-11 place-items-center rounded-lg bg-blue-600 text-white"><Truck className="h-5 w-5" /></span>
         <div>
-          <h1 className="text-xl font-black text-slate-950 dark:text-white">Unstopable Logistics</h1>
+          <h1 className="text-xl font-black text-slate-950">Unstopable Logistics</h1>
           <p className="text-sm text-slate-500">Sign in to your command center</p>
         </div>
       </div>

@@ -5,7 +5,7 @@ import EmptyState from '../common/EmptyState'
 export default function OrderTrendChart({ data = [] }) {
   return (
     <Card>
-      <h2 className="text-base font-bold text-slate-950 dark:text-white">Order trends</h2>
+      <h2 className="text-base font-bold text-slate-950">Order trends</h2>
       <div className="mt-4 h-64">
         {data.length ? (
           <ResponsiveContainer>
@@ -14,7 +14,7 @@ export default function OrderTrendChart({ data = [] }) {
               <XAxis dataKey="label" />
               <YAxis />
               <Tooltip />
-              <Area type="monotone" dataKey="orders" stroke="#0f766e" fill="#ccfbf1" />
+              <Area type="monotone" dataKey="orders" stroke="#2563eb" fill="#dbeafe" />
             </AreaChart>
           </ResponsiveContainer>
         ) : (

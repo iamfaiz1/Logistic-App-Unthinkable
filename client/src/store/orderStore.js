@@ -21,6 +21,7 @@ export const useOrderStore = create((set) => ({
     set({ pricing })
     return pricing
   },
+  fetchOrder: (id) => orderService.getById(id),
   createOrder: (payload) => orderService.create(payload),
-  assignAgent: (orderId, payload) => orderService.assignAgent(orderId, payload),
+  assignAgent: (orderId) => orderService.assignAgent(orderId),
 }))

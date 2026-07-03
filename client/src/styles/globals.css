@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --color-brand: #0f766e;
-  --color-brand-strong: #115e59;
-  --color-ink: #111827;
+  --color-brand: #2563eb;
+  --color-brand-strong: #1d4ed8;
+  --color-ink: #0f172a;
   --color-muted: #64748b;
   --color-surface: #ffffff;
-  --color-canvas: #f6f8fb;
+  --color-canvas: #f8fbff;
 }
 
 html {
@@ -33,11 +33,6 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #bfdbfe;
   border-radius: 999px;
-}
-
-.dark body {
-  background: #08111f;
-  color: #e5eef8;
 }

@@ -5,7 +5,7 @@ import EmptyState from '../common/EmptyState'
 export default function AgentChart({ data = [] }) {
   return (
     <Card>
-      <h2 className="text-base font-bold text-slate-950 dark:text-white">Agent utilization</h2>
+      <h2 className="text-base font-bold text-slate-950">Agent utilization</h2>
       <div className="mt-4 h-64">
         {data.length ? (
           <ResponsiveContainer>

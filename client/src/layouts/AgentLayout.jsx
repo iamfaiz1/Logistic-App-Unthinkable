@@ -4,7 +4,7 @@ import Topbar from '../components/layout/Topbar'
 
 export default function AgentLayout() {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 lg:flex">
+    <div className="min-h-screen bg-[#f8fbff] lg:flex">
       <Sidebar role="AGENT" className="hidden lg:block" />
       <div className="min-w-0 flex-1">
         <Topbar role="AGENT" />

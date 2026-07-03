@@ -4,11 +4,10 @@ import { useZoneStore } from '../../store/zoneStore'
 
 const columns = [
   { accessorKey: 'name', header: 'Zone' },
-  { accessorKey: 'type', header: 'Type' },
-  { accessorKey: 'isActive', header: 'Active', cell: ({ getValue }) => (getValue() === false ? 'No' : 'Yes') },
+  { accessorKey: 'areas', header: 'Areas', cell: ({ row }) => row.original.areas?.length ?? 0 },
 ]
 
-const schema = z.object({ name: z.string().min(2), type: z.string().min(2) })
+const schema = z.object({ name: z.string().min(2) })
 
 export default function ZonesPage() {
   const store = useZoneStore()
@@ -21,10 +20,12 @@ export default function ZonesPage() {
       isLoading={store.isLoading}
       error={store.error}
       columns={columns}
-      fields={[{ name: 'name', label: 'Zone name' }, { name: 'type', label: 'Zone type' }]}
+      fields={[{ name: 'name', label: 'Zone name' }]}
       schema={schema}
       fetchData={store.fetchZones}
       createItem={store.createZone}
+      updateItem={store.updateZone}
+      removeItem={store.removeZone}
     />
   )
 }

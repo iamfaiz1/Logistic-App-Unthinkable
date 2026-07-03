@@ -15,10 +15,10 @@ export default function StatsCards({ summary }) {
       {config.map(([label, key, Icon]) => (
         <Card className="p-4" key={key}>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</span>
-            <Icon className="h-5 w-5 text-teal-700 dark:text-teal-300" />
+            <span className="text-sm font-medium text-slate-500">{label}</span>
+            <Icon className="h-5 w-5 text-blue-600" />
           </div>
-          <strong className="mt-4 block text-3xl font-black text-slate-950 dark:text-white">{summary?.[key] ?? 0}</strong>
+          <strong className="mt-4 block text-3xl font-black text-slate-950">{summary?.[key] ?? 0}</strong>
         </Card>
       ))}
     </section>

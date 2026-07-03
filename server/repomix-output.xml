@@ -42,22 +42,38 @@ The content is organized as follows:
 <directory_structure>
 .gitignore
 app.js
-config/prisma.js
 index.js
 package.json
 prisma.config.ts
+prisma/migrations/20260702170350_init/migration.sql
+prisma/migrations/20260702175050_logistics_schema/migration.sql
+prisma/migrations/20260703162020_zone_relations/migration.sql
+prisma/migrations/migration_lock.toml
+prisma/schema.prisma
 src/app.js
+src/config/prisma.js
+src/controllers/area.controller.js
 src/controllers/auth.controller.js
+src/controllers/rateCard.controller.js
+src/controllers/zone.controllers.js
 src/middleware/auth.middleware.js
-src/prisma/migrations/20260702170350_init/migration.sql
-src/prisma/migrations/20260702175050_logistics_schema/migration.sql
-src/prisma/migrations/migration_lock.toml
-src/prisma/schema.prisma
+src/middleware/error.middleware.js
+src/middleware/rbac.middleware.js
+src/middleware/validate.middleware.js
+src/routes/area.routes.js
 src/routes/auth.routes.js
+src/routes/rateCard.routes.js
+src/routes/zone.routes.js
 src/server.js
+src/services/area.service.js
 src/services/auth.service.js
+src/services/rateCard.service.js
+src/services/zone.services.js
 src/utils/jwt.js
+src/validators/area.validator.js
 src/validators/auth.validator.js
+src/validators/rateCard.validator.js
+src/validators/zone.validator.js
 structure.md
 </directory_structure>
 
@@ -119,20 +135,13 @@ pids
 .DS_Store
 Thumbs.db
 /generated/prisma
+.db
 </file>
 
 <file path="app.js">
 import authRoutes from "./routes/auth.routes.js";
 
 app.use("/api/auth", authRoutes);
-</file>
-
-<file path="config/prisma.js">
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
-
-export default prisma;
 </file>
 
 <file path="index.js">
@@ -224,54 +233,7 @@ export default defineConfig({
 });
 </file>
 
-<file path="src/app.js">
-
-</file>
-
-<file path="src/controllers/auth.controller.js">
-import {
-    registerUser,
-    loginUser,
-} from "../services/auth.service.js";
-
-export const register = async (req, res) => {
-    try {
-        const result = await registerUser(req.body);
-
-        res.status(201).json({
-            success: true,
-            ...result,
-        });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
-    }
-};
-
-export const login = async (req, res) => {
-    try {
-        const result = await loginUser(req.body);
-
-        res.json({
-            success: true,
-            ...result,
-        });
-    } catch (error) {
-        res.status(401).json({
-            success: false,
-            message: error.message,
-        });
-    }
-};
-</file>
-
-<file path="src/middleware/auth.middleware.js">
-
-</file>
-
-<file path="src/prisma/migrations/20260702170350_init/migration.sql">
+<file path="prisma/migrations/20260702170350_init/migration.sql">
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('ADMIN', 'CUSTOMER', 'AGENT');
 
@@ -292,7 +254,7 @@ CREATE TABLE "User" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 </file>
 
-<file path="src/prisma/migrations/20260702175050_logistics_schema/migration.sql">
+<file path="prisma/migrations/20260702175050_logistics_schema/migration.sql">
 -- CreateEnum
 CREATE TYPE "BusinessType" AS ENUM ('B2B', 'B2C');
 
@@ -386,20 +348,101 @@ ALTER TABLE "Order" ADD CONSTRAINT "Order_assignedAgentId_fkey" FOREIGN KEY ("as
 ALTER TABLE "TrackingHistory" ADD CONSTRAINT "TrackingHistory_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 </file>
 
-<file path="src/prisma/migrations/migration_lock.toml">
+<file path="prisma/migrations/20260703162020_zone_relations/migration.sql">
+/*
+  Warnings:
+
+  - A unique constraint covering the columns `[name,zoneId]` on the table `Area` will be added. If there are existing duplicate values, this will fail.
+  - A unique constraint covering the columns `[trackingNumber]` on the table `Order` will be added. If there are existing duplicate values, this will fail.
+  - A unique constraint covering the columns `[businessType,zoneType]` on the table `RateCard` will be added. If there are existing duplicate values, this will fail.
+  - Added the required column `height` to the `Order` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `length` to the `Order` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `trackingNumber` to the `Order` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `width` to the `Order` table without a default value. This is not possible if the table is not empty.
+  - Added the required column `actorRole` to the `TrackingHistory` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE "Order" ADD COLUMN     "height" DOUBLE PRECISION NOT NULL,
+ADD COLUMN     "length" DOUBLE PRECISION NOT NULL,
+ADD COLUMN     "trackingNumber" TEXT NOT NULL,
+ADD COLUMN     "width" DOUBLE PRECISION NOT NULL;
+
+-- AlterTable
+ALTER TABLE "TrackingHistory" ADD COLUMN     "actorRole" "Role" NOT NULL;
+
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "isAvailable" BOOLEAN NOT NULL DEFAULT true;
+
+-- CreateTable
+CREATE TABLE "AgentLocation" (
+    "id" TEXT NOT NULL,
+    "agentId" TEXT NOT NULL,
+    "latitude" DOUBLE PRECISION NOT NULL,
+    "longitude" DOUBLE PRECISION NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "AgentLocation_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DeliveryAttempt" (
+    "id" TEXT NOT NULL,
+    "orderId" TEXT NOT NULL,
+    "attemptNumber" INTEGER NOT NULL,
+    "scheduledDate" TIMESTAMP(3) NOT NULL,
+    "status" "OrderStatus" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "DeliveryAttempt_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "NotificationLog" (
+    "id" TEXT NOT NULL,
+    "orderId" TEXT NOT NULL,
+    "channel" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "sentAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "NotificationLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "AgentLocation_agentId_key" ON "AgentLocation"("agentId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Area_name_zoneId_key" ON "Area"("name", "zoneId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Order_trackingNumber_key" ON "Order"("trackingNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RateCard_businessType_zoneType_key" ON "RateCard"("businessType", "zoneType");
+
+-- AddForeignKey
+ALTER TABLE "AgentLocation" ADD CONSTRAINT "AgentLocation_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Order" ADD CONSTRAINT "Order_pickupZoneId_fkey" FOREIGN KEY ("pickupZoneId") REFERENCES "Zone"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Order" ADD CONSTRAINT "Order_dropZoneId_fkey" FOREIGN KEY ("dropZoneId") REFERENCES "Zone"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DeliveryAttempt" ADD CONSTRAINT "DeliveryAttempt_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "NotificationLog" ADD CONSTRAINT "NotificationLog_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+</file>
+
+<file path="prisma/migrations/migration_lock.toml">
 # Please do not edit this file manually
 # It should be added in your version-control system (e.g., Git)
 provider = "postgresql"
 </file>
 
-<file path="src/prisma/schema.prisma">
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-
+<file path="prisma/schema.prisma">
 generator client {
   provider = "prisma-client-js"
 }
@@ -440,25 +483,29 @@ enum OrderStatus {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  name        String
-  email       String   @unique
-  password    String
-  role        Role     @default(CUSTOMER)
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  role Role @default(CUSTOMER)
+
   isAvailable Boolean @default(true)
-  orders      Order[]  @relation("CustomerOrders")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders         Order[] @relation("CustomerOrders")
   assignedOrders Order[] @relation("AgentOrders")
+
+  location AgentLocation?
 }
 
-
 model AgentLocation {
-  id        String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  agentId   String   @unique
-  agent     User     @relation(fields: [agentId], references: [id])
+  agentId String @unique
+  agent   User   @relation(fields: [agentId], references: [id])
 
   latitude  Float
   longitude Float
@@ -466,90 +513,107 @@ model AgentLocation {
   updatedAt DateTime @updatedAt
 }
 
-
 model Zone {
-  id        String   @id @default(uuid())
-  name      String   @unique
+  id   String @id @default(uuid())
+  name String @unique
 
-  areas     Area[]
+  areas Area[]
+
+  pickupOrders Order[] @relation("PickupZone")
+  dropOrders   Order[] @relation("DropZone")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Area {
-  id        String   @id @default(uuid())
-  name      String
+  id   String @id @default(uuid())
+  name String
 
-  zoneId    String
-  zone      Zone     @relation(fields: [zoneId], references: [id])
+  zoneId String
+  zone   Zone   @relation(fields: [zoneId], references: [id])
 
   createdAt DateTime @default(now())
+
+  @@unique([name, zoneId])
 }
 
 model RateCard {
-  id            String       @id @default(uuid())
+  id String @id @default(uuid())
 
-  businessType  BusinessType
-  zoneType      ZoneType
+  businessType BusinessType
+  zoneType     ZoneType
 
-  ratePerKg     Float
-  codSurcharge  Float
+  ratePerKg    Float
+  codSurcharge Float
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@unique([businessType, zoneType])
 }
 
 model Order {
-  id                  String        @id @default(uuid())
+  id String @id @default(uuid())
 
-  customerId          String
-  customer            User          @relation("CustomerOrders", fields: [customerId], references: [id])
+  trackingNumber String @unique
 
-  assignedAgentId     String?
-  assignedAgent       User?         @relation("AgentOrders", fields: [assignedAgentId], references: [id])
+  customerId String
+  customer   User   @relation("CustomerOrders", fields: [customerId], references: [id])
 
-  pickupAddress       String
-  dropAddress         String
+  assignedAgentId String?
+  assignedAgent   User?   @relation("AgentOrders", fields: [assignedAgentId], references: [id])
 
-  pickupZoneId        String
-  dropZoneId          String
+  pickupAddress String
+  dropAddress   String
 
-  actualWeight        Float
-  volumetricWeight    Float
-  chargeableWeight    Float
+  pickupZoneId String
+  pickupZone   Zone   @relation("PickupZone", fields: [pickupZoneId], references: [id])
 
-  businessType        BusinessType
-  paymentType         PaymentType
+  dropZoneId String
+  dropZone   Zone   @relation("DropZone", fields: [dropZoneId], references: [id])
 
-  finalCharge         Float
+  length Float
+  width  Float
+  height Float
 
-  status              OrderStatus   @default(CREATED)
+  actualWeight     Float
+  volumetricWeight Float
+  chargeableWeight Float
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  businessType BusinessType
+  paymentType  PaymentType
 
-  trackingHistory     TrackingHistory[]
+  finalCharge Float
+
+  status OrderStatus @default(CREATED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trackingHistory  TrackingHistory[]
+  deliveryAttempts DeliveryAttempt[]
+  notifications    NotificationLog[]
 }
 
 model TrackingHistory {
-  id          String      @id @default(uuid())
+  id String @id @default(uuid())
 
-  orderId     String
-  order       Order       @relation(fields: [orderId], references: [id])
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
 
-  status      OrderStatus
+  status OrderStatus
 
-  actorId     String
+  actorId   String
+  actorRole Role
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 }
-
 
 model DeliveryAttempt {
   id String @id @default(uuid())
 
   orderId String
-  order Order @relation(...)
+  order   Order  @relation(fields: [orderId], references: [id])
 
   attemptNumber Int
 
@@ -562,32 +626,527 @@ model DeliveryAttempt {
 
 model NotificationLog {
   id String @id @default(uuid())
+
   orderId String
-  
-  channel String // EMAIL SMS
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  channel String
   message String
+
   sentAt DateTime @default(now())
 }
 </file>
 
-<file path="src/routes/auth.routes.js">
+<file path="src/app.js">
 import express from "express";
+import cors from "cors";
+
+import { errorHandler } from "./middleware/error.middleware.js";
+import authRoutes from "./routes/auth.routes.js";
+import zoneRoutes from "./routes/zone.routes.js";
+import areaRoutes from "./routes/area.routes.js";
+import rateCardRoutes from "./routes/rateCard.routes.js";
+
+const app = express();
+
+// middlewares
+app.use(cors());
+app.use(express.json());
+app.use("/api/auth", authRoutes);
+app.use("/api/zones", zoneRoutes);
+app.use("/api/areas", areaRoutes);
+app.use("/api/rate-cards", rateCardRoutes);
+app.use(errorHandler);
+
+export default app;
+</file>
+
+<file path="src/config/prisma.js">
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export default prisma;
+</file>
+
+<file path="src/controllers/area.controller.js">
+import {
+  createArea,
+  getAreas,
+} from "../services/area.service.js";
+
+export const createAreaController =
+  async (req, res, next) => {
+    try {
+      const area = await createArea(
+        req.body
+      );
+
+      res.status(201).json({
+        success: true,
+        data: area,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+export const getAreasController =
+  async (req, res, next) => {
+    try {
+      const areas = await getAreas();
+
+      res.json({
+        success: true,
+        data: areas,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+</file>
+
+<file path="src/controllers/auth.controller.js">
+import {
+    registerUser,
+    loginUser,
+} from "../services/auth.service.js";
+
+export const register = async (req, res) => {
+    try {
+        const result = await registerUser(req.body);
+
+        res.status(201).json({
+            success: true,
+            ...result,
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+export const me = async (req, res) => {
+  res.json({
+    success: true,
+    user: req.user,
+  });
+};
+
+export const login = async (req, res) => {
+    try {
+        const result = await loginUser(req.body);
+
+        res.json({
+            success: true,
+            ...result,
+        });
+    } catch (error) {
+        res.status(401).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+</file>
+
+<file path="src/controllers/rateCard.controller.js">
+import {
+  createRateCard,
+  getRateCards,
+} from "../services/rateCard.service.js";
+
+export const createRateCardController =
+  async (req, res, next) => {
+    try {
+      const card =
+        await createRateCard(
+          req.body
+        );
+
+      res.status(201).json({
+        success: true,
+        data: card,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+export const getRateCardsController =
+  async (req, res, next) => {
+    try {
+      const cards =
+        await getRateCards();
+
+      res.json({
+        success: true,
+        data: cards,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+</file>
+
+<file path="src/controllers/zone.controllers.js">
+import {
+  createZone,
+  getAllZones,
+} from "../services/zone.service.js";
+
+export const createZoneController =
+  async (req, res, next) => {
+    try {
+      const zone = await createZone(
+        req.body
+      );
+
+      res.status(201).json({
+        success: true,
+        data: zone,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+export const getZonesController =
+  async (req, res, next) => {
+    try {
+      const zones =
+        await getAllZones();
+
+      res.json({
+        success: true,
+        data: zones,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+</file>
+
+<file path="src/middleware/auth.middleware.js">
+import jwt from "jsonwebtoken";
+import prisma from "../../config/prisma.js";
+
+export const authenticateUser = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const authHeader =
+      req.headers.authorization;
+
+    if (
+      !authHeader ||
+      !authHeader.startsWith("Bearer ")
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const token =
+      authHeader.split(" ")[1];
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    const user =
+      await prisma.user.findUnique({
+        where: {
+          id: decoded.userId,
+        },
+      });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    req.user = user;
+
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid Token",
+    });
+  }
+};
+</file>
+
+<file path="src/middleware/error.middleware.js">
+export const errorHandler = (
+  err,
+  req,
+  res,
+  next
+) => {
+  console.error(err);
+
+  return res.status(
+    err.statusCode || 500
+  ).json({
+    success: false,
+    message:
+      err.message ||
+      "Global Middlware Error",
+  });
+};
+</file>
+
+<file path="src/middleware/rbac.middleware.js">
+export const authorizeRoles =
+  (...roles) =>
+  (req, res, next) => {
+
+    if (
+      !roles.includes(req.user.role)
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden",
+      });
+    }
+
+    next();
+};
+</file>
+
+<file path="src/middleware/validate.middleware.js">
+export const validate = (schema) => {
+  return (req, res, next) => {
+    const result = schema.safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        errors: result.error.flatten(),
+      });
+    }
+
+    req.body = result.data;
+
+    next();
+  };
+};
+</file>
+
+<file path="src/routes/area.routes.js">
+import express from "express";
+import {
+  createAreaController,
+  getAreasController,
+} from "../controllers/area.controller.js";
 
 import {
-  register,
-  login,
-} from "../controllers/auth.controller.js";
+  authenticateUser,
+} from "../middleware/auth.middleware.js";
+
+import {
+  authorizeRoles,
+} from "../middleware/rbac.middleware.js";
+
+import { validate }
+from "../middleware/validate.middleware.js";
+
+import {
+  createAreaSchema,
+} from "../validators/area.validator.js";
 
 const router = express.Router();
 
-router.post("/register", register);
-router.post("/login", login);
+
+
+
+
+router.post(
+  "/",
+  authenticateUser,
+  authorizeRoles("ADMIN"),
+  validate(createAreaSchema),
+  createAreaController
+);
+
+router.get(
+  "/",
+  authenticateUser,
+  getAreasController
+);
+
+export default router;
+</file>
+
+<file path="src/routes/auth.routes.js">
+import { validate } from "../middleware/validate.middleware.js";
+import { registerSchema, loginSchema } from "../validators/auth.validator.js";
+
+const router = express.Router();
+
+router.post(
+  "/register",
+  validate(registerSchema),
+  register
+);
+
+router.post(
+  "/login",
+  validate(loginSchema),
+  login
+);
+
+export default router;
+</file>
+
+<file path="src/routes/rateCard.routes.js">
+import express from "express";
+
+import {
+  createRateCardController,
+  getRateCardsController,
+} from "../controllers/rateCard.controller.js";
+
+import {
+  authenticateUser,
+} from "../middleware/auth.middleware.js";
+
+import {
+  authorizeRoles,
+} from "../middleware/rbac.middleware.js";
+
+import { validate }
+from "../middleware/validate.middleware.js";
+
+import {
+  createRateCardSchema,
+} from "../validators/rateCard.validator.js";
+
+const router =
+  express.Router();
+
+router.post(
+  "/",
+  authenticateUser,
+  authorizeRoles("ADMIN"),
+  validate(
+    createRateCardSchema
+  ),
+  createRateCardController
+);
+
+router.get(
+  "/",
+  authenticateUser,
+  getRateCardsController
+);
+
+export default router;
+</file>
+
+<file path="src/routes/zone.routes.js">
+import express from "express";
+
+import {
+  createZoneController,
+  getZonesController,
+} from "../controllers/zone.controller.js";
+
+import { validate }
+from "../middleware/validate.middleware.js";
+
+import {
+  authenticateUser,
+} from "../middleware/auth.middleware.js";
+
+import {
+  authorizeRoles,
+} from "../middleware/rbac.middleware.js";
+
+import {
+  createZoneSchema,
+} from "../validators/zone.validator.js";
+
+const router = express.Router();
+
+router.post(
+  "/",
+  authenticateUser,
+  authorizeRoles("ADMIN"),
+  validate(createZoneSchema),
+  createZoneController
+);
+
+router.get(
+  "/",
+  authenticateUser,
+  getZonesController
+);
 
 export default router;
 </file>
 
 <file path="src/server.js">
+import dotenv from "dotenv";
+import app from "./app.js";
 
+dotenv.config();
+
+const PORT =
+  process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(
+    `Server running on port ${PORT}`
+  );
+});
+</file>
+
+<file path="src/services/area.service.js">
+import prisma from "../../config/prisma.js";
+
+export const createArea = async ({
+  name,
+  zoneId,
+}) => {
+  const zone = await prisma.zone.findUnique({
+    where: {
+      id: zoneId,
+    },
+  });
+
+  if (!zone) {
+    throw new Error("Zone not found");
+  }
+
+  return prisma.area.create({
+    data: {
+      name,
+      zoneId,
+    },
+  });
+};
+
+export const getAreas = async () => {
+  return prisma.area.findMany({
+    include: {
+      zone: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
 </file>
 
 <file path="src/services/auth.service.js">
@@ -647,6 +1206,78 @@ export const loginUser = async ({
 };
 </file>
 
+<file path="src/services/rateCard.service.js">
+import prisma from "../../config/prisma.js";
+
+export const createRateCard = async (
+  data
+) => {
+
+  const existing =
+    await prisma.rateCard.findFirst({
+      where: {
+        businessType:
+          data.businessType,
+
+        zoneType:
+          data.zoneType,
+      },
+    });
+
+  if (existing) {
+    throw new Error(
+      "Rate card already exists"
+    );
+  }
+
+  return prisma.rateCard.create({
+    data,
+  });
+};
+
+export const getRateCards =
+  async () => {
+    return prisma.rateCard.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+};
+</file>
+
+<file path="src/services/zone.services.js">
+import prisma from "../../config/prisma.js";
+
+export const createZone = async (data) => {
+  const existingZone = await prisma.zone.findUnique({
+    where: {
+      name: data.name,
+    },
+  });
+
+  if (existingZone) {
+    throw new Error("Zone already exists");
+  }
+
+  return prisma.zone.create({
+    data: {
+      name: data.name,
+    },
+  });
+};
+
+export const getAllZones = async () => {
+  return prisma.zone.findMany({
+    include: {
+      areas: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+</file>
+
 <file path="src/utils/jwt.js">
 import jwt from "jsonwebtoken";
 
@@ -664,18 +1295,55 @@ export const generateToken = (user) => {
 };
 </file>
 
+<file path="src/validators/area.validator.js">
+import { z } from "zod";
+
+export const createAreaSchema = z.object({
+  name: z.string().min(2).max(100),
+  zoneId: z.string().uuid(),
+});
+</file>
+
 <file path="src/validators/auth.validator.js">
 import { z } from "zod";
 
 export const registerSchema = z.object({
   name: z.string().min(2),
-  email: z.email(),
+  email: z.string().email(),
   password: z.string().min(6),
 });
 
 export const loginSchema = z.object({
-  email: z.email(),
+  email: z.string().email(),
   password: z.string().min(1),
+});
+</file>
+
+<file path="src/validators/rateCard.validator.js">
+import { z } from "zod";
+
+export const createRateCardSchema = z.object({
+  businessType: z.enum([
+    "B2B",
+    "B2C",
+  ]),
+
+  zoneType: z.enum([
+    "INTRA",
+    "INTER",
+  ]),
+
+  ratePerKg: z.number().positive(),
+
+  codSurcharge: z.number().min(0),
+});
+</file>
+
+<file path="src/validators/zone.validator.js">
+import { z } from "zod";
+
+export const createZoneSchema = z.object({
+  name: z.string().min(2).max(100),
 });
 </file>
 

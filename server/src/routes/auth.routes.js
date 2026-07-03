@@ -1,18 +1,32 @@
-import { authenticateUser }
-from "../middleware/auth.middleware.js";
+import express from "express";
+import { validate } from "../middleware/validate.middleware.js";
+import { authenticateUser } from "../middleware/auth.middleware.js";
+import { registerSchema, loginSchema } from "../validators/auth.validator.js";
+import {
+  register,
+  login,
+  me,
+} from "../controllers/auth.controller.js";
 
-import { register, login, me }
-from "../controllers/auth.controller.js";
 
-router.post("/register", validate(registerSchema), register);
-router.post("/login", validate(loginSchema), login);
-router.get("/me", authenticateUser, me);
+const router = express.Router();
 
-// test route
-router.get( "/admin-test", authenticateUser, authorizeRoles("ADMIN"),
-  (req, res) => {
-    res.json({
-      message: "Admin access granted",
-    });
-  }
+router.get(
+  "/me",
+  authenticateUser,
+  me
 );
+
+router.post(
+  "/register",
+  validate(registerSchema),
+  register
+);
+
+router.post(
+  "/login",
+  validate(loginSchema),
+  login
+);
+
+export default router;

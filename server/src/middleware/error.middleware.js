@@ -6,8 +6,12 @@ export const errorHandler = (
 ) => {
   console.error(err);
 
-  return res.status(500).json({
+  return res.status(
+    err.statusCode || 500
+  ).json({
     success: false,
-    message: err.message,
+    message:
+      err.message ||
+      "Global Middlware Error",
   });
 };

@@ -60,9 +60,12 @@ model AgentLocation {
   id String @id @default(uuid())
 
   agentId String @unique
-  agent   User   @relation(fields: [agentId], references: [id])
+  agent User @relation(fields: [agentId], references: [id])
 
-  latitude  Float
+  zoneId String
+  zone Zone @relation(fields: [zoneId], references: [id])
+
+  latitude Float
   longitude Float
 
   updatedAt DateTime @updatedAt
@@ -79,6 +82,7 @@ model Zone {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  agentLocations AgentLocation[]
 }
 
 model Area {
